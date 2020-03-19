@@ -1,0 +1,45 @@
+name: .NET Core CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+      SOLUTION_PATH: SampleWpfApp\SampleWpfApp.sln
+      CONFIGURATION: Release
+      OUTPUT_PATH: SampleWpfApp\SampleWpfApp\bin\Release\netcoreapp3.1
+      ARTIFACT_NAME: SampleWpfApp
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout Code
+      
+    - name: Setup MSBuild Path
+      uses: microsoft/setup-msbuild@v1.0.0
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.2
+    
+    - name: Restore NuGet Packages
+      run: nuget restore ${{ env.SOLUTION_PATH }}
+      
+    - name: Build WPF App
+      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration ${{ env.CONFIGURATION }}
+    
+    - name: Test WPF App
+      run: dotnet test ${{ env.SOLUTION_PATH }}
+      
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: ${{ env.ARTIFACT_NAME }}
+        # Directory containing files to upload
+        path: ${{ env.OUTPUT_PATH }}
